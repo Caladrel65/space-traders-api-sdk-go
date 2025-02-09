@@ -1,17 +1,24 @@
 package main
 
 import (
+	"space-traders-api-sdk-go/pkg/account"
 	"space-traders-api-sdk-go/pkg/agent"
 	"space-traders-api-sdk-go/pkg/factions"
-	"space-traders-api-sdk-go/pkg/player"
 )
 
 func main() {
-	if player.Token == "" {
-		player.Token = agent.RegisterAgent(agent.AgentSymbol, factions.Faction_COSMIC)
+	if account.Token == "" {
+		account.Token = agent.RegisterAgent(agent.AgentSymbol, factions.Faction_COSMIC)
 		println("Token not found, generated a new agent")
-		println("Token:", player.Token)
+		println("Token:", account.Token)
+	} else {
+		println("Token found")
+		println(account.Token)
 	}
+
+	println()
+	println("Agent details:")
+	println(agent.GetAgentDetails())
 
 	// check agent data
 	// view starting location
