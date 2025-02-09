@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"space-traders-api-sdk-go/pkg/factions"
 	"space-traders-api-sdk-go/pkg/player"
 	"space-traders-api-sdk-go/pkg/ship"
 
@@ -16,17 +17,6 @@ const AgentSymbol = "CALADREL"
 
 // registerUrl is the URL of the registration endpoint.
 var registerUrl = player.BaseUrl + "register"
-
-// Factions is a struct containing all of the factions in the game.
-var Factions = struct {
-	Cosmic   string
-	Galactic string
-	Solar    string
-}{
-	Cosmic:   "COSMIC",
-	Galactic: "GALACTIC",
-	Solar:    "SOLAR",
-}
 
 type RegisterResponse struct {
 	Data RegisterData `json:"data"`
@@ -329,11 +319,11 @@ type Agent struct {
 	ShipCount       int    `json:"shipCount"`
 }
 
-func RegisterAgent(symbol string, faction string) string {
+func RegisterAgent(symbol string, faction factions.Faction) string {
 	// Create the register request JSON.
 	registerJSON, _ := json.Marshal(map[string]string{
 		"symbol":  symbol,
-		"faction": faction,
+		"faction": string(faction),
 	})
 
 	// Marshal the JSON body into bytes.

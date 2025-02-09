@@ -1,229 +1,199 @@
 package ship
 
-import "space-traders-api-sdk-go/pkg/navigation"
+import (
+	"space-traders-api-sdk-go/pkg/factions"
+	"space-traders-api-sdk-go/pkg/navigation"
+)
+
+type Fuel struct {
+	Current  int          `json:"current"`
+	Capacity int          `json:"capacity"`
+	Consumed ConsumedFuel `json:"consumed"`
+}
+
+type ConsumedFuel struct {
+	Amount    int    `json:"amount"`
+	Timestamp string `json:"timestamp"` // TODO: What is this for - time we checked? Time we'll run out?
+}
+
+type ShipCooldown struct {
+	ShipSymbol       string `json:"shipSymbol"`
+	TotalSeconds     int    `json:"totalSeconds"`
+	RemainingSeconds int    `json:"remainingSeconds"`
+}
+
+type Frame struct {
+	Symbol         FrameSymbol       `json:"symbol"`      // TODO: Customizeable?
+	Name           string            `json:"name"`        // TODO: Customizeable?
+	Description    string            `json:"description"` // TODO: Customizeable?
+	ModuleSlots    int               `json:"moduleSlots"`
+	MountingPoints int               `json:"mountaingPoints"`
+	FuelCapacity   int               `json:"fuelCapacity"`
+	Condition      int               `json:"condition"`
+	Integrity      int               `json:"integrity"`
+	Requirements   FrameRequirements `json:"requirements"`
+}
+
+type FrameSymbol string
+
+const (
+	FrameSymbol_FRAME_FRIGATE FrameSymbol = "FRAME_FRIGATE"
+)
+
+// TODO: Can probably collapse into a single requirements type?
+type FrameRequirements struct {
+	Power int `json:"power"`
+	Crew  int `json:"crew"`
+}
+
+type Reactor struct {
+	Symbol       ReactorSymbol       `json:"symbol"`
+	Name         string              `json:"name"`
+	Description  string              `json:"description"`
+	Condition    int                 `json:"condition"`
+	Integrity    int                 `json:"integrity"`
+	PowerOutput  int                 `json:"powerOutput"`
+	Requirements ReactorRequirements `json:"requirements"`
+}
+
+type ReactorSymbol string
+
+const ReactorSymbol_REACTOR_FISSION_I ReactorSymbol = "REACTOR_FISSION_I"
+
+type ReactorRequirements struct {
+	Crew int `json:"crew"`
+}
+
+type Engine struct {
+	Symbol       EngineSymbol      `json:"symbol"`      // TODO: Customizeable?
+	Name         string            `json:"name"`        // TODO: Customizeable?
+	Description  string            `json:"description"` // TODO: Customizeable?
+	Condition    int               `json:"condition"`
+	Integrity    int               `json:"integrity"`
+	Speed        int               `json:"speed"`
+	Requirements FrameRequirements `json:"requirements"`
+}
+
+type EngineSymbol string
+
+const (
+	EngineSymbol_ENGINE_ION_DRIVE_II EngineSymbol = "ENGINE_ION_DRIVE_II"
+)
+
+type EngineRequirements struct {
+	Power int `json:"power"`
+	Crew  int `json:"crew"`
+}
+
+type Module struct {
+	Symbol       ModuleSymbol       `json:"symbol"`
+	Name         string             `json:"name"`
+	Description  string             `json:"description"`
+	Capacity     int                `json:"capacity"`
+	Requirements ModuleRequirements `json:"requirements"`
+}
+
+type ModuleSymbol string
+
+const (
+	ModuleSymbol_MODULE_CARGO_HOLD_II       ModuleSymbol = "MODULE_CARGO_HOLD_II"
+	ModuleSymbol_MODULE_CREW_QUARTERS_I     ModuleSymbol = "MODULE_CREW_QUARTERS_I"
+	ModuleSymbol_MODULE_MINERAL_PROCESSOR_I ModuleSymbol = "MODULE_MINERAL_PROCESSOR_I"
+	ModuleSymbol_MODULE_GAS_PROCESSOR_I     ModuleSymbol = "MODULE_GAS_PROCESSOR_I"
+)
+
+type ModuleRequirements struct {
+	Crew  int `json:"crew"`
+	Power int `json:"power"`
+	Slots int `json:"slots"`
+}
+
+type Mount struct {
+	Symbol       MountSymbol       `json:"symbol"`
+	Name         string            `json:"name"`
+	Description  string            `json:"description"`
+	Strength     int               `json:"strength"`
+	Deposits     []Deposit         `json:"deposits"`
+	Requirements MountRequirements `json:"requirements"`
+}
+
+type MountSymbol string
+
+const (
+	MountSymbol_MOUNT_SENSOR_ARRAY_II MountSymbol = "MOUNT_SENSOR_ARRAY_II"
+	MountSymbol_MOUNT_GAS_SIPHON_II   MountSymbol = "MOUNT_GAS_SIPHON_II"
+	MountSymbol_MOUNT_MINING_LASER_II MountSymbol = "MOUNT_MINING_LASER_II"
+	MountSymbol_MOUNT_SURVEYOR_II     MountSymbol = "MOUNT_SURVEYOR_II"
+)
+
+type Deposit string
+
+const (
+	Deposit_QUARTZ_SAND      Deposit = "QUARTZ_SAND"
+	Deposit_SILICON_CRYSTALS Deposit = "SILICON_CRYSTALS"
+	Deposit_PRECIOUS_STONES  Deposit = "PRECIOUS_STONES"
+	Deposit_ICE_WATER        Deposit = "ICE_WATER"
+	Deposit_AMMONIA_ICE      Deposit = "AMMONIA_ICE"
+	Deposit_IRON_ORE         Deposit = "IRON_ORE"
+	Deposit_COPPER_ORE       Deposit = "COPPER_ORE"
+	Deposit_SILVER_ORE       Deposit = "SILVER_ORE"
+	Deposit_ALUMINUM_ORE     Deposit = "ALUMINUM_ORE"
+	Deposit_GOLD_ORE         Deposit = "GOLD_ORE"
+	Deposit_PLATINUM_ORE     Deposit = "PLATINUM_ORE"
+	Deposit_DIAMONDS         Deposit = "DIAMONDS"
+	Deposit_URANITE_ORE      Deposit = "URANITE_ORE"
+)
+
+type MountRequirements struct {
+	Crew  int `json:"crew"`
+	Power int `json:"power"`
+}
+
+type Registration struct {
+	Name          string           `json:"name"`
+	FactionSymbol factions.Faction `json:"factionSymbol"`
+	Role          RegistrationRole `json:"role"`
+}
+
+type RegistrationRole string
+
+const RegistrationRole_COMMAND RegistrationRole = "COMMAND"
+
+type Cargo struct {
+	Capacity  int         `json:"capacity"`
+	Units     int         `json:"units"`
+	Inventory []Inventory `json:"inventory"`
+}
+
+// TODO: What can be in the inventory? We may never know.
+type Inventory string
 
 type Ship struct {
-	Symbol string         `json:"symbol"`
-	Nav    navigation.Nav `json:"nav"`
-	Crew   Crew           `json:"crew"`
-	/*
-		"ship": {
-			      "symbol": "CALADREL2-1",
-			      "nav": {
-			        "systemSymbol": "X1-ST33",
-			        "waypointSymbol": "X1-ST33-A1",
-			        "route": {
-			          "origin": {
-			            "symbol": "X1-ST33-A1",
-			            "type": "PLANET",
-			            "systemSymbol": "X1-ST33",
-			            "x": 27,
-			            "y": 5
-			          },
-			          "destination": {
-			            "symbol": "X1-ST33-A1",
-			            "type": "PLANET",
-			            "systemSymbol": "X1-ST33",
-			            "x": 27,
-			            "y": 5
-			          },
-			          "arrival": "2025-01-13T03:31:22.752Z",
-			          "departureTime": "2025-01-13T03:31:22.752Z"
-			        },
-			        "status": "DOCKED",
-			        "flightMode": "CRUISE"
-			      },
-			      "crew": {
-			        "current": 57,
-			        "capacity": 80,
-			        "required": 57,
-			        "rotation": "STRICT",
-			        "morale": 100,
-			        "wages": 0
-			      },
-			      "fuel": {
-			        "current": 400,
-			        "capacity": 400,
-			        "consumed": {
-			          "amount": 0,
-			          "timestamp": "2025-01-13T03:31:22.752Z"
-			        }
-			      },
-			      "cooldown": {
-			        "shipSymbol": "CALADREL2-1",
-			        "totalSeconds": 0,
-			        "remainingSeconds": 0
-			      },
-			      "frame": {
-			        "symbol": "FRAME_FRIGATE",
-			        "name": "Frigate",
-			        "description": "A medium-sized, multi-purpose spacecraft, often used for combat, transport, or support operations.",
-			        "moduleSlots": 8,
-			        "mountingPoints": 5,
-			        "fuelCapacity": 400,
-			        "condition": 1,
-			        "integrity": 1,
-			        "requirements": {
-			          "power": 8,
-			          "crew": 25
-			        }
-			      },
-			      "reactor": {
-			        "symbol": "REACTOR_FISSION_I",
-			        "name": "Fission Reactor I",
-			        "description": "A basic fission power reactor, used to generate electricity from nuclear fission reactions.",
-			        "condition": 1,
-			        "integrity": 1,
-			        "powerOutput": 31,
-			        "requirements": {
-			          "crew": 8
-			        }
-			      },
-			      "engine": {
-			        "symbol": "ENGINE_ION_DRIVE_II",
-			        "name": "Ion Drive II",
-			        "description": "An advanced propulsion system that uses ionized particles to generate high-speed, low-thrust acceleration, with improved efficiency and performance.",
-			        "condition": 1,
-			        "integrity": 1,
-			        "speed": 30,
-			        "requirements": {
-			          "power": 6,
-			          "crew": 8
-			        }
-			      },
-			      "modules": [
-			        {
-			          "symbol": "MODULE_CARGO_HOLD_II",
-			          "name": "Expanded Cargo Hold",
-			          "description": "An expanded cargo hold module that provides more efficient storage space for a ship's cargo.",
-			          "capacity": 40,
-			          "requirements": {
-			            "crew": 2,
-			            "power": 2,
-			            "slots": 2
-			          }
-			        },
-			        {
-			          "symbol": "MODULE_CREW_QUARTERS_I",
-			          "name": "Crew Quarters",
-			          "description": "A module that provides living space and amenities for the crew.",
-			          "capacity": 40,
-			          "requirements": {
-			            "crew": 2,
-			            "power": 1,
-			            "slots": 1
-			          }
-			        },
-			        {
-			          "symbol": "MODULE_CREW_QUARTERS_I",
-			          "name": "Crew Quarters",
-			          "description": "A module that provides living space and amenities for the crew.",
-			          "capacity": 40,
-			          "requirements": {
-			            "crew": 2,
-			            "power": 1,
-			            "slots": 1
-			          }
-			        },
-			        {
-			          "symbol": "MODULE_MINERAL_PROCESSOR_I",
-			          "name": "Mineral Processor",
-			          "description": "Crushes and processes extracted minerals and ores into their component parts, filters out impurities, and containerizes them into raw storage units.",
-			          "requirements": {
-			            "crew": 0,
-			            "power": 1,
-			            "slots": 2
-			          }
-			        },
-			        {
-			          "symbol": "MODULE_GAS_PROCESSOR_I",
-			          "name": "Gas Processor",
-			          "description": "Filters and processes extracted gases into their component parts, filters out impurities, and containerizes them into raw storage units.",
-			          "requirements": {
-			            "crew": 0,
-			            "power": 1,
-			            "slots": 2
-			          }
-			        }
-			      ],
-			      "mounts": [
-			        {
-			          "symbol": "MOUNT_SENSOR_ARRAY_II",
-			          "name": "Sensor Array II",
-			          "description": "An advanced sensor array that improves a ship's ability to detect and track other objects in space with greater accuracy and range.",
-			          "strength": 4,
-			          "requirements": {
-			            "crew": 2,
-			            "power": 2
-			          }
-			        },
-			        {
-			          "symbol": "MOUNT_GAS_SIPHON_II",
-			          "name": "Gas Siphon II",
-			          "description": "An advanced gas siphon that can extract gas from gas giants and other gas-rich bodies more efficiently and at a higher rate.",
-			          "strength": 20,
-			          "requirements": {
-			            "crew": 2,
-			            "power": 2
-			          }
-			        },
-			        {
-			          "symbol": "MOUNT_MINING_LASER_II",
-			          "name": "Mining Laser II",
-			          "description": "An advanced mining laser that is more efficient and effective at extracting valuable minerals from asteroids and other space objects.",
-			          "strength": 5,
-			          "requirements": {
-			            "crew": 2,
-			            "power": 2
-			          }
-			        },
-			        {
-			          "symbol": "MOUNT_SURVEYOR_II",
-			          "name": "Surveyor II",
-			          "description": "An advanced survey probe that can be used to gather information about a mineral deposit with greater accuracy.",
-			          "strength": 2,
-			          "deposits": [
-			            "QUARTZ_SAND",
-			            "SILICON_CRYSTALS",
-			            "PRECIOUS_STONES",
-			            "ICE_WATER",
-			            "AMMONIA_ICE",
-			            "IRON_ORE",
-			            "COPPER_ORE",
-			            "SILVER_ORE",
-			            "ALUMINUM_ORE",
-			            "GOLD_ORE",
-			            "PLATINUM_ORE",
-			            "DIAMONDS",
-			            "URANITE_ORE"
-			          ],
-			          "requirements": {
-			            "crew": 4,
-			            "power": 3
-			          }
-			        }
-			      ],
-			      "registration": {
-			        "name": "CALADREL2-1",
-			        "factionSymbol": "COSMIC",
-			        "role": "COMMAND"
-			      },
-			      "cargo": {
-			        "capacity": 40,
-			        "units": 0,
-			        "inventory": []
-			      }
-			    }
-			  }
-			}
-	*/
+	Symbol       string         `json:"symbol"` // ex "CALADREL2-1"
+	Nav          navigation.Nav `json:"nav"`
+	Crew         Crew           `json:"crew"`
+	Fuel         Fuel           `json:"fuel"`
+	Cooldown     ShipCooldown   `json:"cooldown"`
+	Frame        Frame          `json:"frame"`
+	Reactor      Reactor        `json:"reactor"`
+	Engine       Engine         `json:"engine"`
+	Modules      []Module       `json:"modules"`
+	Mounts       []Mount        `json:"mounts"`
+	Registration Registration   `json:"registration"`
 }
 
 type Crew struct {
-	Current  int    `json:"current"`
-	Capacity int    `json:"capacity"`
-	Required int    `json:"required"`
-	Rotation string `json:"rotation"`
-	Morale   int    `json:"morale"`
-	Wages    int    `json:"wages"`
+	Current  int          `json:"current"`
+	Capacity int          `json:"capacity"`
+	Required int          `json:"required"`
+	Rotation CrewRotation `json:"rotation"`
+	Morale   int          `json:"morale"`
+	Wages    int          `json:"wages"`
 }
+
+type CrewRotation string
+
+const (
+	CrewRotation_STRICT = "STRICT"
+	// TODO: Others
+)

@@ -5,6 +5,7 @@ import (
 	"space-traders-api-sdk-go/pkg/agent"
 )
 
+// TODO: Is this nesting really needed?
 type APIError struct {
 	Error Error `json:"error"`
 }
