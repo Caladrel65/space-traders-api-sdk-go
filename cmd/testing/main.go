@@ -1,50 +1,86 @@
 package main
 
 import (
-	"space-traders-api-sdk-go/pkg/account"
+	"fmt"
+	"log"
 	"space-traders-api-sdk-go/pkg/agent"
-	"space-traders-api-sdk-go/pkg/factions"
+	"space-traders-api-sdk-go/pkg/client"
+	"space-traders-api-sdk-go/pkg/game"
+	"space-traders-api-sdk-go/pkg/navigation"
+	"space-traders-api-sdk-go/pkg/ship"
+	"strings"
 )
 
 func main() {
-	if account.Token == "" {
-		account.Token = agent.RegisterAgent(agent.AgentSymbol, factions.Faction_COSMIC)
-		println("Token not found, generated a new agent")
-		println("Token:", account.Token)
-	} else {
-		println("Token found")
-		println(account.Token)
+	var agentData *agent.RegisterData
+
+	agentData, err := agent.LoadAgent()
+	if err != nil {
+		fmt.Println("No agent data found, registering a new agent...")
+		client := client.NewClient("")
+		agentData, err = agent.Register(client)
+		if err != nil {
+			log.Fatalf("Error registering agent: %s", err.Error())
+		}
+		err = agent.SaveAgent(agentData)
+		if err != nil {
+			log.Fatalf("Error saving agent data: %s", err.Error())
+		}
 	}
 
-	println()
-	println("Agent details:")
-	println(agent.GetAgentDetails())
+	client := client.NewClient(agentData.Token)
 
-	// check agent data
-	// view starting location
+	if !agentData.Contract.Terms.Accepted {
+		fmt.Println("Accepting the first contract...")
+		acceptContractResponse, err := agent.AcceptContract(client, agentData.Contract.Id)
+		if err != nil {
+			log.Fatalf("Error accepting contract: %s", err.Error())
+		}
+		agentData.Agent = acceptContractResponse.Data.Agent
+		agentData.Contract = acceptContractResponse.Data.Contract
+		err = agent.SaveAgent(agentData)
+		if err != nil {
+			log.Fatalf("Error saving agent data: %s", err.Error())
+		}
+	}
 
-	// view contracts
-	// accept contract
+	if agentData.Agent.ShipCount == 0 {
+		fmt.Println("Purchasing a mining drone...")
+		headquarters := agentData.Agent.Headquarters
+		systemSymbol := strings.Split(headquarters, "-")[0] + "-" + strings.Split(headquarters, "-")[1]
+		waypoints, err := navigation.GetSystemWaypoints(client, systemSymbol)
+		if err != nil {
+			log.Fatalf("Error getting system waypoints: %s", err.Error())
+		}
 
-	// find shipyard
-	// view available ships
-	// purchase ship (mining drone)
+		var shipyardWaypoint navigation.Waypoint
+		for _, waypoint := range waypoints {
+			for _, trait := range waypoint.Traits {
+				if trait.Symbol == "SHIPYARD" {
+					shipyardWaypoint = waypoint
+					break
+				}
+			}
+		}
 
-	// find nearby engineered asteroid
-	// send ship to orbit
-	// fly to the asteroid
-	// dock ship
-	// refuel ship
-	// orbit asteroid again
-	// extract ores and minerals
+		if shipyardWaypoint.Symbol == "" {
+			log.Fatalf("No shipyard found in system %s", systemSymbol)
+		}
 
-	// view market data
-	// TODO: If market does not buy your things, you need to go to another market.
-	// list ship cargo
-	// dock ship
-	// sell goods (not needed for the contract)
+		purchaseShipResponse, err := ship.PurchaseShip(client, "SHIP_MINING_DRONE", shipyardWaypoint.Symbol)
+		if err != nil {
+			log.Fatalf("Error purchasing ship: %s", err.Error())
+		}
 
-	// navigate to delivery waypoint
-	// deliver contract goods
-	// fulfill contract (once all goods have been delivered, will take multiple trips)
+		agentData.Agent = purchaseShipResponse.Data.Agent
+		agentData.Agent.Ships = append(agentData.Agent.Ships, purchaseShipResponse.Data.Ship)
+
+		err = agent.SaveAgent(agentData)
+		if err != nil {
+			log.Fatalf("Error saving agent data: %s", err.Error())
+		}
+	}
+
+	state := game.NewState(client, &agentData.Agent)
+	state.Run()
 }

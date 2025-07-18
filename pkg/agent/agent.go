@@ -1,26 +1,15 @@
 package agent
 
 import (
-	"space-traders-api-sdk-go/pkg/account"
-	"space-traders-api-sdk-go/pkg/errors"
+	"encoding/json"
+	"fmt"
+	"os"
+	"space-traders-api-sdk-go/pkg/client"
 	"space-traders-api-sdk-go/pkg/factions"
 	"space-traders-api-sdk-go/pkg/ship"
-
-	"bytes"
-	"encoding/json"
-	"io"
-	"log"
-	"net/http"
 )
 
-// AgentSymbol contains the symbol for the single agent being used in the current context.
 const AgentSymbol = "CALADREL"
-
-// registerUrl is the URL of the registration endpoint.
-var registerUrl = account.BaseUrl + "register"
-
-// agentUrl is the URL to get your agent details.
-var agentDetailsUrl = account.BaseUrl + "my/agent"
 
 type RegisterResponse struct {
 	Data RegisterData `json:"data"`
@@ -41,6 +30,7 @@ type Agent struct {
 	Credits         int              `json:"credits"`
 	StartingFaction factions.Faction `json:"startingFaction"`
 	ShipCount       int              `json:"shipCount"`
+	Ships           []ship.Ship      `json:"ships"`
 }
 
 type Contract struct {
@@ -61,7 +51,7 @@ type ContractTerms struct {
 	Payment          ContractPayment `json:"payment"`
 	Deliver          []Delivery      `json:"deliver"`
 	Accepted         bool            `json:"accepted"`
-	Fulfilled        bool            `json:"fulfilled"`
+	Fulfilled        bool            `json:tfulfilled"`
 	Expiration       string          `json:"expiration"`
 	DeadlineToAccept string          `json:"deadlineToAccept"`
 }
@@ -78,96 +68,65 @@ type Delivery struct {
 	UnitsFulfilled    int    `json:"unitsFulfilled"`
 }
 
-func RegisterAgent(symbol string, faction factions.Faction) string {
-	// Create the register request JSON.
-	registerJSON, _ := json.Marshal(map[string]string{
-		"symbol":  symbol,
-		"faction": string(faction),
-	})
-
-	// Marshal the JSON body into bytes.
-	registerBody := bytes.NewBuffer(registerJSON)
-
-	// Build the register request.
-	registerReq, _ := http.NewRequest(http.MethodPost, registerUrl, registerBody)
-
-	// Add the content-type header.
-	registerReq.Header.Add("content-type", "application/json")
-
-	// Send ("Do") the request and receive the response.
-	registerResp, err := http.DefaultClient.Do(registerReq)
-	if err != nil {
-		// This error would mean we had an issue in talking to the server, not that the server returned an error.
-		log.Fatalf("An error occurred during agent registration: %s", err.Error())
+func Register(client *client.Client) (*RegisterData, error) {
+	registerJSON := map[string]string{
+		"symbol":  AgentSymbol,
+		"faction": string(factions.Faction_COSMIC),
 	}
 
-	defer registerResp.Body.Close()
-
-	// Read the body from the response.
-	registerRespBody, err := io.ReadAll(registerResp.Body)
+	var resp RegisterResponse
+	err := client.Post("/register", registerJSON, &resp)
 	if err != nil {
-		log.Fatalf("An error occurred reading the agent registration response body: %s", err.Error())
+		return nil, err
 	}
-
-	var resp *RegisterResponse
-
-	err = json.Unmarshal(registerRespBody, resp)
-	if err != nil {
-		// TODO: Maybe we found an error here?
-		log.Fatalf("An error occurred while unmarshalling the response body: %s", err.Error())
-	}
-
-	// Convert the body to a printable string.
-	registerRespString := string(registerRespBody)
-
-	return registerRespString
+	return &resp.Data, nil
 }
 
-func GetAgentDetails() string {
-	// Build the get details request.
-	agentReq, _ := http.NewRequest(http.MethodGet, agentDetailsUrl, nil)
-
-	// Add the headers.
-	account.AddAuthorization(agentReq)
-
-	// Send the request and receive the response.
-	agentResp, err := http.DefaultClient.Do(agentReq)
-	if err != nil {
-		log.Fatalf("An error occurred during agent details: %s", err.Error())
+func GetMyAgent(client *client.Client) (*Agent, error) {
+	var resp struct {
+		Data Agent `json:"data"`
 	}
-
-	defer agentResp.Body.Close()
-
-	// Read the body from the response.
-	agentRespBody, err := io.ReadAll(agentResp.Body)
+	err := client.Get("/my/agent", &resp)
 	if err != nil {
-		log.Fatalf("An error occurred reading the agent details response body: %s", err.Error())
+		return nil, err
 	}
-
-	println(agentRespBody)
-	var resp *AgentDetailsResponse
-
-	err = json.Unmarshal(agentRespBody, resp)
-	if err != nil {
-		log.Fatalf("An error occurred while unmarshalling the response body: %s", err.Error())
-	}
-
-	// Convert the body to a printable string.
-	agentRespString := string(agentRespBody)
-
-	return agentRespString
+	return &resp.Data, nil
 }
 
-type AgentDetailsResponse struct {
-	Data  AgentDetailsData `json:"data"`
-	Error errors.APIError  `json:"error"`
+func SaveAgent(agent *RegisterData) error {
+	b, err := json.Marshal(agent)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile("agent.json", b, 0644)
 }
 
-type AgentDetailsData struct {
-	AccountId       string           `json:"accountId"`
-	Symbol          string           `json:"symbol"`
-	Headquarters    string           `json:"headquarters"`
-	Credits         int              `json:"credits"`
-	StartingFaction factions.Faction `json:"startingFaction"`
-	ShipCount       int              `json:"shipCount"`
+func LoadAgent() (*RegisterData, error) {
+	b, err := os.ReadFile("agent.json")
+	if err != nil {
+		return nil, err
+	}
+
+	var agent RegisterData
+	err = json.Unmarshal(b, &agent)
+	if err != nil {
+		return nil, err
+	}
+	return &agent, nil
+}
+
+type AcceptContractResponse struct {
+	Data struct {
+		Agent    Agent    `json:"agent"`
+		Contract Contract `json:"contract"`
+	} `json:"data"`
+}
+
+func AcceptContract(client *client.Client, contractId string) (*AcceptContractResponse, error) {
+	var resp AcceptContractResponse
+	err := client.Post(fmt.Sprintf("/my/contracts/%s/accept", contractId), nil, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }

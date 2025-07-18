@@ -1,6 +1,8 @@
 package ship
 
 import (
+	"fmt"
+	"space-traders-api-sdk-go/pkg/client"
 	"space-traders-api-sdk-go/pkg/factions"
 	"space-traders-api-sdk-go/pkg/navigation"
 )
@@ -180,6 +182,7 @@ type Ship struct {
 	Modules      []Module       `json:"modules"`
 	Mounts       []Mount        `json:"mounts"`
 	Registration Registration   `json:"registration"`
+	Role         string         `json:"role"`
 }
 
 type Crew struct {
@@ -197,3 +200,184 @@ const (
 	CrewRotation_STRICT = "STRICT"
 	// TODO: Others
 )
+
+type Shipyard struct {
+	Symbol       string         `json:"symbol"`
+	ShipTypes    []ShipType     `json:"shipTypes"`
+	Transactions []Transaction  `json:"transactions"`
+	Ships        []ShipyardShip `json:"ships"`
+}
+
+type ShipType struct {
+	Type string `json:"type"`
+}
+
+type Transaction struct {
+	WaypointSymbol string `json:"waypointSymbol"`
+	ShipSymbol     string `json:"shipSymbol"`
+	Price          int    `json:"price"`
+	AgentSymbol    string `json:"agentSymbol"`
+	Timestamp      string `json:"timestamp"`
+}
+
+type ShipyardShip struct {
+	Type           string         `json:"type"`
+	Name           string         `json:"name"`
+	Description    string         `json:"description"`
+	PurchasePrice  int            `json:"purchasePrice"`
+	Frame          Frame          `json:"frame"`
+	Reactor        Reactor        `json:"reactor"`
+	Engine         Engine         `json:"engine"`
+	Modules        []Module       `json:"modules"`
+	Mounts         []Mount        `json:"mounts"`
+	Crew           Crew           `json:"crew"`
+	Fuel           Fuel           `json:"fuel"`
+	Nav            navigation.Nav `json:"nav"`
+}
+
+func GetShipyard(client *client.Client, systemSymbol string, waypointSymbol string) (*Shipyard, error) {
+	var resp struct {
+		Data Shipyard `json:"data"`
+	}
+	err := client.Get(fmt.Sprintf("/systems/%s/waypoints/%s/shipyard", systemSymbol, waypointSymbol), &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp.Data, nil
+}
+
+type PurchaseShipResponse struct {
+	Data struct {
+		Agent       agent.Agent `json:"agent"`
+		Ship        Ship        `json:"ship"`
+		Transaction Transaction `json:"transaction"`
+	} `json:"data"`
+}
+
+func PurchaseShip(client *client.Client, shipType string, waypointSymbol string) (*PurchaseShipResponse, error) {
+	body := map[string]string{
+		"shipType":       shipType,
+		"waypointSymbol": waypointSymbol,
+	}
+
+	var resp PurchaseShipResponse
+	err := client.Post("/my/ships", body, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type NavigateShipResponse struct {
+	Data struct {
+		Fuel Fuel           `json:"fuel"`
+		Nav  navigation.Nav `json:"nav"`
+	} `json:"data"`
+}
+
+func Navigate(client *client.Client, shipSymbol string, waypointSymbol string) (*NavigateShipResponse, error) {
+	body := map[string]string{
+		"waypointSymbol": waypointSymbol,
+	}
+
+	var resp NavigateShipResponse
+	err := client.Post(fmt.Sprintf("/my/ships/%s/navigate", shipSymbol), body, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type OrbitShipResponse struct {
+	Data struct {
+		Nav navigation.Nav `json:"nav"`
+	} `json:"data"`
+}
+
+func Orbit(client *client.Client, shipSymbol string) (*OrbitShipResponse, error) {
+	var resp OrbitShipResponse
+	err := client.Post(fmt.Sprintf("/my/ships/%s/orbit", shipSymbol), nil, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DockShipResponse struct {
+	Data struct {
+		Nav navigation.Nav `json:"nav"`
+	} `json:"data"`
+}
+
+func Dock(client *client.Client, shipSymbol string) (*DockShipResponse, error) {
+	var resp DockShipResponse
+	err := client.Post(fmt.Sprintf("/my/ships/%s/dock", shipSymbol), nil, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type RefuelShipResponse struct {
+	Data struct {
+		Agent agent.Agent `json:"agent"`
+		Fuel  Fuel        `json:"fuel"`
+	} `json:"data"`
+}
+
+func Refuel(client *client.Client, shipSymbol string) (*RefuelShipResponse, error) {
+	var resp RefuelShipResponse
+	err := client.Post(fmt.Sprintf("/my/ships/%s/refuel", shipSymbol), nil, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ExtractResourcesResponse struct {
+	Data struct {
+		Cooldown   ShipCooldown `json:"cooldown"`
+		Extraction Extraction   `json:"extraction"`
+		Cargo      Cargo        `json:"cargo"`
+	} `json:"data"`
+}
+
+type Extraction struct {
+	ShipSymbol string `json:"shipSymbol"`
+	Yield      Yield  `json:"yield"`
+}
+
+type Yield struct {
+	Symbol string `json:"symbol"`
+	Units  int    `json:"units"`
+}
+
+func Extract(client *client.Client, shipSymbol string) (*ExtractResourcesResponse, error) {
+	var resp ExtractResourcesResponse
+	err := client.Post(fmt.Sprintf("/my/ships/%s/extract", shipSymbol), nil, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type TransferCargoResponse struct {
+	Data struct {
+		Cargo Cargo `json:"cargo"`
+	} `json:"data"`
+}
+
+func TransferCargo(client *client.Client, shipSymbol string, tradeSymbol string, units int, toShipSymbol string) (*TransferCargoResponse, error) {
+	body := map[string]interface{}{
+		"tradeSymbol":  tradeSymbol,
+		"units":        units,
+		"shipSymbol": toShipSymbol,
+	}
+
+	var resp TransferCargoResponse
+	err := client.Post(fmt.Sprintf("/my/ships/%s/transfer", shipSymbol), body, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}

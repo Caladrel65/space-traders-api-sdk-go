@@ -1,5 +1,10 @@
 package navigation
 
+import (
+	"fmt"
+	"space-traders-api-sdk-go/pkg/client"
+)
+
 type Status string
 
 const (
@@ -41,4 +46,46 @@ type Location struct {
 	SystemSymbol string `json:"systemSymbol"`
 	X            int    `json:"x"`
 	Y            int    `json:"y"`
+}
+
+type Waypoint struct {
+	Symbol       string `json:"symbol"`
+	Type         string `json:"type"`
+	SystemSymbol string `json:"systemSymbol"`
+	X            int    `json:"x"`
+	Y            int    `json:"y"`
+	Orbitals     []struct {
+		Symbol string `json:"symbol"`
+	} `json:"orbitals"`
+	Traits []struct {
+		Symbol      string `json:"symbol"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+	} `json:"traits"`
+}
+
+func GetSystemWaypoints(client *client.Client, systemSymbol string) ([]Waypoint, error) {
+	var resp struct {
+		Data []Waypoint `json:"data"`
+	}
+	err := client.Get(fmt.Sprintf("/systems/%s/waypoints", systemSymbol), &resp)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}
+
+func FindWaypointByType(client *client.Client, systemSymbol string, waypointType string) (*Waypoint, error) {
+	waypoints, err := GetSystemWaypoints(client, systemSymbol)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range waypoints {
+		if waypoints[i].Type == waypointType {
+			return &waypoints[i], nil
+		}
+	}
+
+	return nil, fmt.Errorf("no waypoint with type %s found in system %s", waypointType, systemSymbol)
 }
