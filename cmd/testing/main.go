@@ -63,7 +63,8 @@ func main() {
 		client := client.NewClient(accountToken.Token)
 		agentData, err = models.Register(client)
 		if err != nil {
-			log.Fatalf("Error registering agent: %s", err.Error())
+			log.Printf("Error registering agent: %s", err.Error())
+			log.Fatalf("Registration failed. Please check your token and try again.")
 		}
 		client.Token = agentData.Token
 		err = models.SaveAgent(agentData)
@@ -71,8 +72,44 @@ func main() {
 			log.Fatalf("Error saving agent data: %s", err.Error())
 		}
 		newAgentRegistered = true
+        // After registration, add the initial ship to the agent's ships slice
+        if agentData.Ship.Symbol != "" {
+            agentData.Agent.Ships = append(agentData.Agent.Ships, agentData.Ship)
+        }
+    }
+
+    // Ensure agentData.Agent.Ships is not nil
+    if agentData.Agent.Ships == nil {
+        agentData.Agent.Ships = []models.Ship{}
+    }
+
+    // If a new agent was registered, print out the initial contract and ship information
+    if newAgentRegistered {
+        fmt.Println("\n--- New Agent Registered ---")
+        fmt.Printf("Agent Symbol: %s\n", agentData.Agent.Symbol)
+        fmt.Printf("Agent Credits: %d\n", agentData.Agent.Credits)
+
+		if agentData.Contract.Id != "" {
+			fmt.Println("\n--- Initial Contract ---")
+			fmt.Printf("Contract ID: %s\n", agentData.Contract.Id)
+			fmt.Printf("Contract Type: %s\n", agentData.Contract.Type)
+			fmt.Printf("Contract Expiration: %s\n", agentData.Contract.Terms.Expiration)
+			fmt.Printf("Contract Accepted: %t\n", agentData.Contract.Terms.Accepted)
+		} else {
+			fmt.Println("No initial contract found.")
+		}
+
+		if len(agentData.Agent.Ships) > 0 {
+			fmt.Println("\n--- Initial Ships ---")
+			for i, ship := range agentData.Agent.Ships {
+				fmt.Printf("Ship %d Symbol: %s\n", i+1, ship.Symbol)
+				fmt.Printf("Ship %d Type: %s\n", i+1, ship.Frame.Symbol)
+			}
+		} else {
+			fmt.Println("No initial ships found.")
+		}
+		fmt.Println("--------------------------")
 	}
-	os.Exit(0)
 
 	client := client.NewClient(agentData.Token)
 
@@ -118,7 +155,8 @@ func main() {
 				log.Fatalf("Error purchasing ship: %s", err.Error())
 			}
 
-			agentData.Agent = purchaseShipResponse.Data.Agent
+			agentData.Agent.Credits = purchaseShipResponse.Data.Agent.Credits
+			agentData.Agent.ShipCount = purchaseShipResponse.Data.Agent.ShipCount
 			agentData.Agent.Ships = append(agentData.Agent.Ships, purchaseShipResponse.Data.Ship)
 
 			err = models.SaveAgent(agentData)

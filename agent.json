@@ -1,25 +1,32 @@
 {
-  "token": "",
+  "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWVyIjoiQ0FMQURSRUwiLCJ2ZXJzaW9uIjoidjIuMy4wIiwicmVzZXRfZGF0ZSI6IjIwMjUtMDctMTMiLCJpYXQiOjE3NTI5NDA0NDUsInN1YiI6ImFnZW50LXRva2VuIn0.gXCPPFh2nn7fHQmjsCVI-5aEvrGjRvMuh7fluFuq5yCqGYFhAR2mNOQQdirE4i29BiCnZhERKtAnR60h3l-20fHmjXAyCZBN1a-D_5AES4ZKgdZPR_mwO_y7Lz2_Wh3QbUMIq27po9PJGXCQ4auUGtos8gKYdZoLW8i46n5Q-S3TcOx-3xqwJCDKuuozwcLpxQ0vmTOt9Bx4k_WzAJsLad0IYBAHmaFWKL-9ZjDZ1YvRlbFhqmfgsbVWhrmcFuMGbp9Zw9BrJt32fBCUzXjrQ9m8MPIC5R59NWF6tKTbCy0J4RaigySDY3gwRsIMFSkha_7tBNuls17Uy8-36tGO2pV4pgOlys60LSIzKZH1k-elbA4qHAHSZL-brgCVnaNf59J6X34y4eJwwWw__XWszM4Wi-VHdVAzasYllqlU6lzNxtMbTmGrulJhYTqvZvLhNZiNcyhBQkUd0guJjtf9IjVhJHB_gWNYZmATCdlENfJyO9La62WmTLEMcI2zo9ETatqGc1MadJN59Bd0k5UDfJ5gFQrhIqljzEs71nmoWKWrzC3j_vLDfX19xbI5gEMB615XoUeH00fQiHkD9JRNTQiq8ew4TD_Rsta4Qqw8dtnn8sb7xcgFgMrM5VA71wOsMLuypNndglcEJyF3clL3ivhBa73qQMrgSA0m3spJaBA",
   "agent": {
-    "accountId": "",
-    "symbol": "",
-    "headquarters": "",
-    "credits": 0,
-    "startingFaction": "",
-    "shipCount": 0,
+    "accountId": "cmdaef0zp0040tm16p89hd8hw",
+    "symbol": "CALADREL",
+    "headquarters": "X1-ZT3-A1",
+    "credits": 175000,
+    "startingFaction": "COSMIC",
+    "shipCount": 2,
     "ships": null
   },
   "contract": {
-    "id": "",
-    "factionSymbol": "",
-    "type": "",
+    "id": "cmdafhc7f4iclri74gb8pj0dr",
+    "factionSymbol": "COSMIC",
+    "type": "PROCUREMENT",
     "terms": {
-      "deadline": "",
+      "deadline": "2025-07-26T15:54:05.448Z",
       "payment": {
-        "onAccepted": 0,
-        "onFulfilled": 0
+        "onAccepted": 2797,
+        "onFulfilled": 13054
       },
-      "deliver": null,
+      "deliver": [
+        {
+          "tradeSymbol": "IRON_ORE",
+          "destinationSymbol": "X1-ZT3-H46",
+          "unitsRequired": 74,
+          "unitsFulfilled": 0
+        }
+      ],
       "accepted": false,
       "Fulfilled": false,
       "expiration": "",
@@ -27,12 +34,33 @@
     }
   },
   "faction": {
-    "symbol": "",
-    "name": "",
-    "description": "",
-    "headquarters": "",
-    "traits": null,
-    "isRecruiting": false
+    "symbol": "COSMIC",
+    "name": "Cosmic Engineers",
+    "description": "The Cosmic Engineers are a group of highly advanced scientists and engineers who seek to terraform and colonize new worlds, pushing the boundaries of technology and exploration.",
+    "headquarters": "X1-V83",
+    "traits": [
+      {
+        "symbol": "INNOVATIVE",
+        "name": "Innovative",
+        "description": "Willing to try new and untested ideas. Sometimes able to come up with creative and original solutions to problems, and may be able to think outside the box. Sometimes at the forefront of technological or social change, and may be willing to take risks in order to advance the boundaries of human knowledge and understanding."
+      },
+      {
+        "symbol": "BOLD",
+        "name": "Bold",
+        "description": "Unafraid to take risks and challenge the status quo. Sometimes willing to do things that others would not dare, and may be able to overcome obstacles and challenges that would be insurmountable for others. Sometimes able to inspire and motivate others to take bold action as well."
+      },
+      {
+        "symbol": "VISIONARY",
+        "name": "Visionary",
+        "description": "Possessing a clear and compelling vision for the future. Sometimes able to see beyond the present and anticipate the needs and challenges of tomorrow. Sometimes able to inspire and guide others towards a better and brighter future, and may be willing to take bold and decisive action to make their vision a reality."
+      },
+      {
+        "symbol": "CURIOUS",
+        "name": "Curious",
+        "description": "Possessing a strong desire to learn and explore. Sometimes interested in a wide range of topics and may be willing to take risks in order to satisfy their curiosity. Sometimes able to think outside the box and come up with creative solutions to challenges."
+      }
+    ],
+    "isRecruiting": true
   },
   "ship": {
     "symbol": "",
