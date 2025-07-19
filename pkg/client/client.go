@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -27,7 +28,9 @@ func (c *Client) Get(path string, dest any) error {
 		return err
 	}
 
-	req.Header.Add("Authorization", "Bearer "+c.Token)
+	if c.Token != "" {
+		req.Header.Add("Authorization", "Bearer "+c.Token)
+	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -39,6 +42,7 @@ func (c *Client) Get(path string, dest any) error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("GET %s Response: %s\n", path, string(b))
 
 	return json.Unmarshal(b, dest)
 }
@@ -55,7 +59,9 @@ func (c *Client) Post(path string, body any, dest any) error {
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer "+c.Token)
+	if c.Token != "" {
+		req.Header.Add("Authorization", "Bearer "+c.Token)
+	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -67,6 +73,7 @@ func (c *Client) Post(path string, body any, dest any) error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("POST %s Response: %s\n", path, string(b))
 
 	return json.Unmarshal(b, dest)
 }

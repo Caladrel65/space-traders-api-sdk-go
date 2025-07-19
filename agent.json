@@ -1,0 +1,135 @@
+{
+  "token": "",
+  "agent": {
+    "accountId": "",
+    "symbol": "",
+    "headquarters": "",
+    "credits": 0,
+    "startingFaction": "",
+    "shipCount": 0,
+    "ships": null
+  },
+  "contract": {
+    "id": "",
+    "factionSymbol": "",
+    "type": "",
+    "terms": {
+      "deadline": "",
+      "payment": {
+        "onAccepted": 0,
+        "onFulfilled": 0
+      },
+      "deliver": null,
+      "accepted": false,
+      "Fulfilled": false,
+      "expiration": "",
+      "deadlineToAccept": ""
+    }
+  },
+  "faction": {
+    "symbol": "",
+    "name": "",
+    "description": "",
+    "headquarters": "",
+    "traits": null,
+    "isRecruiting": false
+  },
+  "ship": {
+    "symbol": "",
+    "nav": {
+      "systemSymbol": "",
+      "waypointSymbol": "",
+      "route": {
+        "origin": {
+          "symbol": "",
+          "type": "",
+          "systemSymbol": "",
+          "x": 0,
+          "y": 0
+        },
+        "destination": {
+          "symbol": "",
+          "type": "",
+          "systemSymbol": "",
+          "x": 0,
+          "y": 0
+        },
+        "arrival": "",
+        "departureTime": ""
+      },
+      "status": "",
+      "flightMode": ""
+    },
+    "crew": {
+      "current": 0,
+      "capacity": 0,
+      "required": 0,
+      "rotation": "",
+      "morale": 0,
+      "wages": 0
+    },
+    "fuel": {
+      "current": 0,
+      "capacity": 0,
+      "consumed": {
+        "amount": 0,
+        "timestamp": ""
+      }
+    },
+    "cargo": {
+      "capacity": 0,
+      "units": 0,
+      "inventory": null
+    },
+    "cooldown": {
+      "shipSymbol": "",
+      "totalSeconds": 0,
+      "remainingSeconds": 0
+    },
+    "frame": {
+      "symbol": "",
+      "name": "",
+      "description": "",
+      "moduleSlots": 0,
+      "mountaingPoints": 0,
+      "fuelCapacity": 0,
+      "condition": 0,
+      "integrity": 0,
+      "requirements": {
+        "power": 0,
+        "crew": 0
+      }
+    },
+    "reactor": {
+      "symbol": "",
+      "name": "",
+      "description": "",
+      "condition": 0,
+      "integrity": 0,
+      "powerOutput": 0,
+      "requirements": {
+        "crew": 0
+      }
+    },
+    "engine": {
+      "symbol": "",
+      "name": "",
+      "description": "",
+      "condition": 0,
+      "integrity": 0,
+      "speed": 0,
+      "requirements": {
+        "power": 0,
+        "crew": 0
+      }
+    },
+    "modules": null,
+    "mounts": null,
+    "registration": {
+      "name": "",
+      "factionSymbol": "",
+      "role": ""
+    },
+    "role": ""
+  }
+}

@@ -1,4 +1,4 @@
-package agent
+package models
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"os"
 	"space-traders-api-sdk-go/pkg/client"
 	"space-traders-api-sdk-go/pkg/factions"
-	"space-traders-api-sdk-go/pkg/ship"
 )
 
 const AgentSymbol = "CALADREL"
@@ -20,7 +19,7 @@ type RegisterData struct {
 	Agent    Agent                   `json:"agent"`
 	Contract Contract                `json:"contract"`
 	Faction  factions.FactionDetails `json:"faction"`
-	Ship     ship.Ship               `json:"ship"`
+	Ship     Ship               `json:"ship"`
 }
 
 type Agent struct {
@@ -30,7 +29,7 @@ type Agent struct {
 	Credits         int              `json:"credits"`
 	StartingFaction factions.Faction `json:"startingFaction"`
 	ShipCount       int              `json:"shipCount"`
-	Ships           []ship.Ship      `json:"ships"`
+	Ships           []Ship      `json:"ships"`
 }
 
 type Contract struct {
@@ -94,7 +93,7 @@ func GetMyAgent(client *client.Client) (*Agent, error) {
 }
 
 func SaveAgent(agent *RegisterData) error {
-	b, err := json.Marshal(agent)
+	b, err := json.MarshalIndent(agent, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -130,3 +129,4 @@ func AcceptContract(client *client.Client, contractId string) (*AcceptContractRe
 	}
 	return &resp, nil
 }
+

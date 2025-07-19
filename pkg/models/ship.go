@@ -1,4 +1,4 @@
-package ship
+package models
 
 import (
 	"fmt"
@@ -175,6 +175,7 @@ type Ship struct {
 	Nav          navigation.Nav `json:"nav"`
 	Crew         Crew           `json:"crew"`
 	Fuel         Fuel           `json:"fuel"`
+	Cargo        Cargo          `json:"cargo"`
 	Cooldown     ShipCooldown   `json:"cooldown"`
 	Frame        Frame          `json:"frame"`
 	Reactor      Reactor        `json:"reactor"`
@@ -248,7 +249,7 @@ func GetShipyard(client *client.Client, systemSymbol string, waypointSymbol stri
 
 type PurchaseShipResponse struct {
 	Data struct {
-		Agent       agent.Agent `json:"agent"`
+		Agent       Agent       `json:"agent"`
 		Ship        Ship        `json:"ship"`
 		Transaction Transaction `json:"transaction"`
 	} `json:"data"`
@@ -320,8 +321,8 @@ func Dock(client *client.Client, shipSymbol string) (*DockShipResponse, error) {
 
 type RefuelShipResponse struct {
 	Data struct {
-		Agent agent.Agent `json:"agent"`
-		Fuel  Fuel        `json:"fuel"`
+		Agent Agent `json:"agent"`
+		Fuel  Fuel  `json:"fuel"`
 	} `json:"data"`
 }
 

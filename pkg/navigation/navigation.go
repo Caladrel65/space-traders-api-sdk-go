@@ -9,6 +9,7 @@ type Status string
 
 const (
 	Status_DOCKED = "DOCKED"
+	Status_IN_ORBIT = "IN_ORBIT"
 	// TODO: Other statuses
 )
 
