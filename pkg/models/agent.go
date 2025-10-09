@@ -32,6 +32,11 @@ type Agent struct {
 	Ships           []Ship      `json:"ships"`
 }
 
+type FullAgent struct {
+	Agent Agent  `json:"agent"`
+	Ships []Ship `json:"ships"`
+}
+
 type Contract struct {
 	Id            string           `json:"id"`
 	FactionSymbol factions.Faction `json:"factionSymbol"`

@@ -382,3 +382,16 @@ func TransferCargo(client *client.Client, shipSymbol string, tradeSymbol string,
 	}
 	return &resp, nil
 }
+
+type GetMyShipsResponse struct {
+	Data []Ship `json:"data"`
+}
+
+func GetMyShips(client *client.Client) ([]Ship, error) {
+	var resp GetMyShipsResponse
+	err := client.Get("/my/ships", &resp)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}
